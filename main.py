@@ -14,59 +14,87 @@ class App(pg.window.Window):
         self.height = pg.canvas.Display().get_default_screen().height - 70
         self.maximize()
 
-        self._rect = pg.shapes.Rectangle(self.width / 2, self.height / 2, self.width / 10, self.height / 10,
-                            color = (0, 0, 0),
-                            batch = self._batch)
+        self._rects = []
+        self._vels = []
+
+        for i in range(100):
+            self._rects.append(pg.shapes.Rectangle(self.height / 2, self.height / 2, self.width / 10, self.height / 10,
+                                color = self.randColor(),
+                                batch = self._batch))
                             
-        self.velRand()
+            self.insert_vel()
 
         pg.clock.schedule_interval(self.update, 1 / 120)
 
+    def randColor(self):
+        return (randint(0,255), randint(0,255), randint(0,255))
+
     def update(self, dt):
-        self._rect.x += self._vel_x * dt
-        self._rect.y += self._vel_y * dt
+        for rect in self._rects:
+            rect.x += self._vels[self._rects.index(rect)]['x'] * dt
+            rect.y += self._vels[self._rects.index(rect)]['y'] * dt
 
-        if self._rect.x <= 0:
-            self._rect.x = 0
-            self._vel_x = -self._vel_x
+            if rect.x <= 0:
+                rect.x = 0
+                self._vels[self._rects.index(rect)]['x'] = -self._vels[self._rects.index(rect)]['x']
+                rect.color = self.randColor()
 
-        if self._rect.x >= self.width - self._rect.width:
-            self._rect.x = self.width - self._rect.width
-            self._vel_x = -self._vel_x
+            if rect.x >= self.width - rect.width:
+                rect.x = self.width - rect.width
+                self._vels[self._rects.index(rect)]['x'] = -self._vels[self._rects.index(rect)]['x']
+                rect.color = self.randColor()
 
-        if self._rect.y <= 0:
-            self._rect.y = 0
-            self._vel_y = -self._vel_y
-        
-        if self._rect.y >= self.height - self._rect.height:
-            self._rect.y = self.height - self._rect.height
-            self._vel_y = -self._vel_y
+            if rect.y <= 0:
+                rect.y = 0
+                self._vels[self._rects.index(rect)]['y'] = -self._vels[self._rects.index(rect)]['y']
+                rect.color = self.randColor()
+            
+            if rect.y >= self.height - rect.height:
+                rect.y = self.height - rect.height
+                self._vels[self._rects.index(rect)]['y'] = -self._vels[self._rects.index(rect)]['y']
+                rect.color = self.randColor()
 
     def velRand(self):
-        self._vel_x = randint(-self.width // 2, self.width // 2)
-        self._vel_y = randint(-self.height // 2, self.height // 2)
+        x = randint(-self.width // 2, self.width // 2)
+        y = randint(-self.height // 2, self.height // 2)
 
-        if self._vel_x == 0 or self._vel_y == 0:
-            self.velRand()
+        return x, y
+    
+    def insert_vel(self):
+        x, y = self.velRand()
+
+        self._vels.append({'x': x, 'y': y})
+    
+    def replace_vel(self):
+        x, y = self.velRand()
+
+        for vel in self._vels:
+            x, y = self.velRand()
+            self._vels.pop(0)
+
+            self._vels.append({'x': x, 'y': y})
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == pg.window.mouse.LEFT:
-            if x > self._rect.x and x < self._rect.x + self._rect.width and y > self._rect.y and y < self._rect.y + self._rect.height:
-                self._vel_x = 0
-                self._vel_y = 0
+            for rect in self._rects:
+                if x > rect.x and x < rect.x + rect.width and y > rect.y and y < rect.y + rect.height:
+                    self._vels[self._rects.index(rect)]['x'] = 0
+                    self._vels[self._rects.index(rect)]['y'] = 0
 
-                self._click_x = x
-                self._click_y = y
+                    self._rect = rect
 
-                self._dx_rect_click = self._rect.x - x
-                self._dy_rect_click = self._rect.y - y
+                    self._click_x = x
+                    self._click_y = y
+
+                    self._dx_rect_click = rect.x - x
+                    self._dy_rect_click = rect.y - y
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == pg.window.mouse.LEFT:
             try:
-                if self._dx_rect_click or  self._dy_rect_click:
-                    self._vel_x = (self._click_x - x) * 2
-                    self._vel_y = (self._click_y - y) * 2
+                if self._dx_rect_click or  self._dy_rect_click:    
+                    self._vels[self._rects.index(self._rect)]['x'] = (self._click_x - x) * 2
+                    self._vels[self._rects.index(self._rect)]['y'] = (self._click_y - y) * 2
 
                     self._dx_rect_click = 0
                     self._dy_rect_click = 0
@@ -85,35 +113,54 @@ class App(pg.window.Window):
                 pass
 
     def on_key_press(self, symbol, modifiers):
-        if symbol in [pg.window.key.LEFT, pg.window.key.RIGHT, pg.window.key.DOWN, pg.window.key.UP]:
+        if symbol in [pg.window.key.LEFT, pg.window.key.RIGHT, pg.window.key.DOWN, pg.window.key.UP, pg.window.key.SPACE]:
             if symbol == pg.window.key.LEFT:
-                if self._vel_x > 0:
-                    self._vel_x = -self._vel_x
+                for rect in self._rects:
+                    if self._vels[self._rects.index(rect)]['x'] > 0:
+                        self._vels[self._rects.index(rect)]['x'] = -self._vels[self._rects.index(rect)]['x']
+
+                        rect.color = self.randColor()
 
             if symbol == pg.window.key.UP:
-                if self._vel_y < 0:
-                    self._vel_y = -self._vel_y
+                for rect in self._rects:
+                    if self._vels[self._rects.index(rect)]['y'] < 0:
+                        self._vels[self._rects.index(rect)]['y'] = -self._vels[self._rects.index(rect)]['y']
+
+                        rect.color = self.randColor()
 
             if symbol == pg.window.key.RIGHT:
-                if self._vel_x < 0:
-                    self._vel_x = -self._vel_x
+                for rect in self._rects:
+                    if self._vels[self._rects.index(rect)]['x'] < 0:
+                        self._vels[self._rects.index(rect)]['x'] = -self._vels[self._rects.index(rect)]['x']
+
+                        rect.color = self.randColor()
 
             if symbol == pg.window.key.DOWN:
-                if self._vel_y > 0:
-                    self._vel_y = -self._vel_y
+                for rect in self._rects:
+                    if self._vels[self._rects.index(rect)]['y'] > 0:
+                        self._vels[self._rects.index(rect)]['y'] = -self._vels[self._rects.index(rect)]['y']
+                            
+                        rect.color = self.randColor()
 
-            if symbol == pg.window.key.NUM_0:
-                self._vel_x = 0
-                self._vel_y = 0
+            if symbol == pg.window.key.SPACE:
+                for rect in self._rects:
+                    self.replace_vel()
+                    rect.color = self.randColor()
+
+        if modifiers & pg.window.key.MOD_CTRL:
+            for rect in self._rects:
+                self._vels[self._rects.index(rect)]['x'] = 0
+                self._vels[self._rects.index(rect)]['y'] = 0
 
     def on_resize(self, width, height):
         super().on_resize(width, height)
+        
+        for rect in self._rects:
+            rect.width = self.height / 10
+            rect.height =  self.height / 10
 
-        self._rect.width = self.width / 10
-        self._rect.height =  self.height / 10
-
-        self._rect.x = width / 2 - self._rect.width / 2
-        self._rect.y = height / 2 - self._rect.height / 2
+            rect.x = width / 2 - rect.width / 2
+            rect.y = height / 2 - rect.height / 2
 
     def on_draw(self):
         self.clear()

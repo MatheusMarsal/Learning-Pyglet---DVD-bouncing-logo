@@ -5,6 +5,7 @@ class App(pg.window.Window):
     def __init__(self, *kwarg, **kwards):
         super().__init__(*kwarg, **kwards)
 
+        self._beep = pg.media.load('Beep.mp3', streaming=False)
         self._style = self.WINDOW_STYLE_TRANSPARENT
 
         self._batch = pg.graphics.Batch()
@@ -24,8 +25,7 @@ class App(pg.window.Window):
 
             self.append_velRand()
         
-
-        pg.clock.schedule_interval(self.update, 1 / 120)
+        pg.clock.schedule_interval(self.update, 1/120)
 
     def border_collision(self, rect):
         if rect.x <= 0:
@@ -44,60 +44,80 @@ class App(pg.window.Window):
             rect.y = self.height - rect.height
             self._vels[self._rects.index(rect)]['y'] = -self._vels[self._rects.index(rect)]['y']
 
-    def rects_collision(self):
+    def collision_rects(self, rect1, rect2):
+        if  self._vels[rect1]['x'] > 0 and self._vels[rect2]['x'] < 0 or \
+            self._vels[rect1]['x'] < 0 and self._vels[rect2]['x'] > 0:
+            self._vels[rect1]['x'] = -self._vels[rect1]['x']
+            self._vels[rect2]['x'] = -self._vels[rect2]['x']
+            
+        else:
+            vel_pivot = self._vels[rect1]['x']
+            self._vels[rect1]['x'] = self._vels[rect2]['x']
+            self._vels[rect2]['x'] = vel_pivot
+
+        if  self._vels[rect1]['y'] > 0 and self._vels[rect2]['y'] < 0 or \
+            self._vels[rect1]['y'] < 0 and self._vels[rect2]['y'] > 0:
+            self._vels[rect1]['y'] = -self._vels[rect1]['y']
+            self._vels[rect2]['y'] = -self._vels[rect2]['y']
+        
+        else:
+            vel_pivot = self._vels[rect1]['y']
+            self._vels[rect1]['y'] = self._vels[rect2]['y']
+            self._vels[rect2]['y'] = vel_pivot
+
+    def collision_botton_right(self, rect1, rect2):
+        if  self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x and \
+            self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + (self._rects[rect2].width * 0.3) and  \
+            self._rects[rect1].y >= self._rects[rect2].y and \
+            self._rects[rect1].y <= self._rects[rect2].y + self._rects[rect2].height:
+
+            self.collision_rects(rect1, rect2)
+            self._beep.play()
+
+    def collision_top(self, rect1, rect2):
+        if  self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x and \
+            self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + self._rects[rect2].width and  \
+            self._rects[rect1].y >= self._rects[rect2].y + (self._rects[rect2].height * 0.7)  and \
+            self._rects[rect1].y <= self._rects[rect2].y + self._rects[rect2].height:
+            
+            self.collision_rects(rect1, rect2)
+            self._beep.play()
+
+    def collision_top_right(self, rect1, rect2):
+        if  self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x and \
+            self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + (self._rects[rect2].width * 0.3) and  \
+            self._rects[rect1].y + self._rects[rect1].height >= self._rects[rect2].y and \
+            self._rects[rect1].y + self._rects[rect1].height <= self._rects[rect2].y + self._rects[rect2].height:
+            
+            self.collision_rects(rect1, rect2)
+            self._beep.play()
+
+    def collision_botton(self, rect1, rect2):
+        if  self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x and \
+            self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + self._rects[rect2].width and  \
+            self._rects[rect1].y + self._rects[rect1].height >= self._rects[rect2].y and \
+            self._rects[rect1].y + self._rects[rect1].height <= self._rects[rect2].y + (self._rects[rect2].height * 0.3):
+            
+            self.collision_rects(rect1, rect2)
+            self._beep.play()
+
+    def rects_sensor(self):
         for rect1 in range(len(self._rects)):
             for rect2 in range(len(self._rects)):
-                if  self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x and \
-                    self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + self._rects[rect2].width and  \
-                    self._rects[rect1].y > self._rects[rect2].y and \
-                    self._rects[rect1].y < self._rects[rect2].y + self._rects[rect2].height:
-                    
-                    if  self._vels[rect1]['x'] > 0 and self._vels[rect2]['x'] < 0 or \
-                        self._vels[rect1]['x'] < 0 and self._vels[rect2]['x'] > 0:
-                        self._vels[rect1]['x'] = -self._vels[rect1]['x']
-                        self._vels[rect2]['x'] = -self._vels[rect2]['x']
-                    
-                    else:
-                        vel_pivot = self._vels[rect1]['x']
-                        self._vels[rect1]['x'] = self._vels[rect2]['x']
-                        self._vels[rect2]['x'] = vel_pivot
-
-                    if  self._vels[rect1]['y'] > 0 and self._vels[rect2]['y'] < 0 or \
-                        self._vels[rect1]['y'] < 0 and self._vels[rect2]['y'] > 0:
-                        self._vels[rect1]['y'] = -self._vels[rect1]['y']
-                        self._vels[rect2]['y'] = -self._vels[rect2]['y']
-                    
-                    else:
-                        vel_pivot = self._vels[rect1]['y']
-                        self._vels[rect1]['y'] = self._vels[rect2]['y']
-                        self._vels[rect2]['y'] = vel_pivot
-
-                    #self._rects[rect1].color = (30, 30, 30)
-
-                if  self._rects[rect1].x + self._rects[rect1].width > self._rects[rect2].x and \
-                    self._rects[rect1].x + self._rects[rect1].width < self._rects[rect2].x + self._rects[rect2].width and \
-                    self._rects[rect1].y + self._rects[rect1].height >= self._rects[rect2].y and \
-                    self._rects[rect1].y + self._rects[rect1].height <= self._rects[rect2].y + self._rects[rect2].height:
-                    
-                    if  self._vels[rect1]['x'] > 0 and self._vels[rect2]['x'] < 0 or \
-                        self._vels[rect1]['x'] < 0 and self._vels[rect2]['x'] > 0:
-                        self._vels[rect1]['x'] = -self._vels[rect1]['x']
-                        self._vels[rect2]['x'] = -self._vels[rect2]['x']
-
-                    if  self._vels[rect1]['y'] > 0 and self._vels[rect2]['y'] < 0 or \
-                        self._vels[rect1]['y'] < 0 and self._vels[rect2]['y'] > 0:
-                        self._vels[rect1]['y'] = -self._vels[rect1]['y']
-                        self._vels[rect2]['y'] = -self._vels[rect2]['y']
-
-                    #self._rects[rect1].color = (30, 30, 30)
+                if rect2 != rect1:
+                    self.collision_botton_right(rect1, rect2)
+                    self.collision_top_right(rect1, rect2)
+                    self.collision_top(rect1, rect2)
+                    self.collision_botton(rect1, rect2)
 
     def update(self, dt):
         for rect in self._rects:
-            rect.x += self._vels[self._rects.index(rect)]['x'] * dt 
+            rect.x += self._vels[self._rects.index(rect)]['x'] * dt
             rect.y += self._vels[self._rects.index(rect)]['y'] * dt
 
             self.border_collision(rect)
-            self.rects_collision()
+
+        self.rects_sensor()
 
     def velRand(self):
         vel_x = randint(-self.width // 2, self.width // 2)
@@ -193,7 +213,6 @@ class App(pg.window.Window):
         super().on_resize(width, height)
 
         count = 0
-        source = pg.media.load('beep.mp3')
         for rect in self._rects:
             rect.width = self.height // 10
             rect.height =  self.height // 10

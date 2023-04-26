@@ -48,7 +48,7 @@ class App(pg.window.Window):
         if  self._vels[rect1]['x'] > 0 and self._vels[rect2]['x'] < 0 or \
             self._vels[rect1]['x'] < 0 and self._vels[rect2]['x'] > 0:
             self._vels[rect1]['x'] = -self._vels[rect1]['x']
-            self._vels[rect2]['x'] = -self._vels[rect2]['x']
+            self._vels[rect2]['x'] = -self._vels[rect2]['x']            
             
         else:
             vel_pivot = self._vels[rect1]['x']
@@ -71,6 +71,12 @@ class App(pg.window.Window):
             self._rects[rect1].y >= self._rects[rect2].y and \
             self._rects[rect1].y <= self._rects[rect2].y + self._rects[rect2].height:
 
+            if self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x:
+                self._rects[rect1].x -= self._rects[rect1].x + self._rects[rect1].width - self._rects[rect2].x
+            
+            else:
+                self._rects[rect2].x -= self._rects[rect2].x + self._rects[rect2].width - self._rects[rect1].x
+
             self.collision_rects(rect1, rect2)
             self._beep.play()
 
@@ -79,6 +85,12 @@ class App(pg.window.Window):
             self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + self._rects[rect2].width and  \
             self._rects[rect1].y >= self._rects[rect2].y + (self._rects[rect2].height * 0.7)  and \
             self._rects[rect1].y <= self._rects[rect2].y + self._rects[rect2].height:
+
+            if self._rects[rect1].y + self._rects[rect1].height <= self._rects[rect2].y:
+                self._rects[rect1].y -= self._rects[rect1].y + self._rects[rect1].height - self._rects[rect2].y
+            
+            else:
+                self._rects[rect2].y -= self._rects[rect2].y + self._rects[rect2].height - self._rects[rect1].y
             
             self.collision_rects(rect1, rect2)
             self._beep.play()
@@ -88,6 +100,12 @@ class App(pg.window.Window):
             self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + (self._rects[rect2].width * 0.3) and  \
             self._rects[rect1].y + self._rects[rect1].height >= self._rects[rect2].y and \
             self._rects[rect1].y + self._rects[rect1].height <= self._rects[rect2].y + self._rects[rect2].height:
+
+            if self._rects[rect1].x + self._rects[rect1].width >= self._rects[rect2].x:
+                self._rects[rect1].x -= self._rects[rect1].x + self._rects[rect1].width - self._rects[rect2].x
+            
+            else:
+                self._rects[rect2].x -= self._rects[rect2].x + self._rects[rect2].width - self._rects[rect1].x
             
             self.collision_rects(rect1, rect2)
             self._beep.play()
@@ -97,6 +115,12 @@ class App(pg.window.Window):
             self._rects[rect1].x + self._rects[rect1].width <= self._rects[rect2].x + self._rects[rect2].width and  \
             self._rects[rect1].y + self._rects[rect1].height >= self._rects[rect2].y and \
             self._rects[rect1].y + self._rects[rect1].height <= self._rects[rect2].y + (self._rects[rect2].height * 0.3):
+
+            if self._rects[rect1].y + self._rects[rect1].height >= self._rects[rect2].y:
+                self._rects[rect1].y -= self._rects[rect1].y + self._rects[rect1].height - self._rects[rect2].y
+            
+            else:
+                self._rects[rect2].y -= self._rects[rect2].y + self._rects[rect2].height - self._rects[rect1].y
             
             self.collision_rects(rect1, rect2)
             self._beep.play()
